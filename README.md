@@ -1,13 +1,17 @@
-# streaming-06 (Consumers, Windowing, and Multiple Channels)
+# streaming-07 
 ### Amber Speer
-### Module 5 & 6 Assignments
-### Feb 13-18, 2023
+### Module 7 Assignments
+### Feb 27, 2023
 
+## Final Project
+
+For my final project I chose to attempt to expand my smoker project and add email alerts.  To this point I have not been able to even see if my code works because i haven't been able to update python in environment.  However, this will at least give me a starting point from which to work.
 
 
 # Prerequisites
 
-This script require pika, sys, webbrowser, csv, time, and deque.
+This script require pika, sys, webbrowser, csv, time, deque, tomlib (requires Python 3.11), pprint, EmailMessage (from email.message), and smtplib.
+
 
 # How to run the code
 

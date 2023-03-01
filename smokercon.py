@@ -78,7 +78,122 @@ def smoker_callback(ch, method, properties, body):
     # defining smoker alert
     if smoker_temp_change >= smoker_alert_limit:
         print(f" Smoker alert!!! The temperature of the smoker has decreased by 15 F or more in 2.5 min (or 5 readings). \n          Smoker temp decrease = {smoker_temp_change} degrees F = {smoker_now_temp} - {smoker_temp_1}")
-        
+                createAndSendEmailAlert(email_subject="Smoker Alert!", email_body="Smoker Alert!!! The temperature of the smoker has decreased by 15 F or more in 2.5 min (or 5 readings)" )
+    
+    def createAndSendEmailAlert(email_subject: str, email_body: str):
+
+    """Read outgoing email info from a TOML config file"""
+
+    with open(".env.toml", "rb") as file_object:
+        secret_dict = tomllib.load(file_object)
+    pprint.pprint(secret_dict)
+
+    # basic information
+
+    host = secret_dict["outgoing_email_host"]
+    port = secret_dict["outgoing_email_port"]
+    outemail = secret_dict["outgoing_email_address"]
+    outpwd = secret_dict["outgoing_email_password"]
+
+    # Create an instance of an EmailMessage
+
+    msg = EmailMessage()
+    msg["From"] = secret_dict["outgoing_email_address"]
+    msg["To"] = secret_dict["outgoing_email_address"]
+    msg["Reply-to"] = secret_dict["outgoing_email_address"]
+    email_subject = "Smoker Alert!"
+    email_body = "Smoker Alert!!! The temperature of the smoker has decreased by 15 F or more in 2.5 min (or 5 readings)"
+
+    msg["Subject"] = email_subject
+    msg.set_content(email_body)
+
+    print("========================================")
+    print(f"Prepared Email Message: ")
+    print("========================================")
+    print()
+    print(f"{str(msg)}")
+    print("========================================")
+    print()
+
+    # Communications can fail, so use:
+
+    # try -   to execute the code
+    # except - when you get an Exception, do something else
+    # finally - clean up regardless
+
+    # Create an instance of an email server, enable debug messages
+
+    server = smtplib.SMTP(host)
+    server.set_debuglevel(2)
+
+    print("========================================")
+    print(f"SMTP server created: {str(server)}")
+    print("========================================")
+    print()
+
+    try:
+        print()
+        server.connect(host, port)  # 465
+        print("========================================")
+        print(f"Connected: {host, port}")
+        print("So far so good - will attempt to start TLS")
+        print("========================================")
+        print()
+
+        server.starttls()
+        print("========================================")
+        print(f"TLS started. Will attempt to login.")
+        print("========================================")
+        print()
+
+        try:
+            server.login(outemail, outpwd)
+            print("========================================")
+            print(f"Successfully logged in as {outemail}.")
+            print("========================================")
+            print()
+
+        except smtplib.SMTPHeloError:
+            print("The server did not reply properly to the HELO greeting.")
+            exit()
+        except smtplib.SMTPAuthenticationError:
+            print("The server did not accept the username/password combination.")
+            exit()
+        except smtplib.SMTPNotSupportedError:
+            print("The AUTH command is not supported by the server.")
+            exit()
+        except smtplib.SMTPException:
+            print("No suitable authentication method was found.")
+            exit()
+        except Exception as e:
+            print(f"Login error. {str(e)}")
+            exit()
+
+        try:
+            server.send_message(msg)
+            print("========================================")
+            print(f"Message sent.")
+            print("========================================")
+            print()
+        except Exception as e:
+            print()
+            print(f"ERROR: {str(e)}")
+        finally:
+            server.quit()
+            print("========================================")
+            print(f"Session terminated.")
+            print("========================================")
+            print()
+
+    # Except if we get an Exception (we call e)
+
+    except ConnectionRefusedError as e:
+        print(f"Error connecting. {str(e)}")
+        print()
+
+    except smtplib.SMTPConnectError as e:
+        print(f"SMTP connect error. {str(e)}")
+        print()
     
 
 # define a main function to run the program
